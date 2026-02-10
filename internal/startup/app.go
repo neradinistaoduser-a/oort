@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"sync"
 
 	"github.com/c12s/oort/internal/configs"
@@ -17,6 +18,7 @@ import (
 	"github.com/c12s/oort/pkg/messaging"
 	"github.com/c12s/oort/pkg/messaging/nats"
 	natsgo "github.com/nats-io/nats.go"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -48,6 +50,13 @@ func NewAppWithConfig(config configs.Config) (*app, error) {
 }
 
 func (a *app) Start() error {
+	ctx := context.Background()
+	shutdownTracing := initTracing(
+		ctx,
+		os.Getenv("JAEGER_HOST")+":"+os.Getenv("JAEGER_GRPC_PORT"),
+	)
+	a.shutdownProcesses = append(a.shutdownProcesses, shutdownTracing)
+
 	a.init()
 
 	err := a.startAdministratorAsyncServer()
@@ -86,6 +95,7 @@ func (a *app) GracefulStop(ctx context.Context) {
 }
 
 func (a *app) init() {
+
 	natsConn, err := newNatsConn(a.config.Nats().Uri())
 	if err != nil {
 		log.Fatalln(err)
@@ -127,7 +137,9 @@ func (a *app) initGrpcServer() {
 	if a.evaluatorGrpcServer == nil {
 		log.Fatalln("eval grpc server is nil")
 	}
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+	)
 	api.RegisterOortAdministratorServer(s, a.administratorGrpcServer)
 	api.RegisterOortEvaluatorServer(s, a.evaluatorGrpcServer)
 	reflection.Register(s)

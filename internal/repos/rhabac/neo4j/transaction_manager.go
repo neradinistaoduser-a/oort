@@ -1,8 +1,11 @@
 package neo4j
 
 import (
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"context"
 	"log"
+
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"go.opentelemetry.io/otel"
 )
 
 type TransactionManager struct {
@@ -23,7 +26,11 @@ func NewTransactionManager(uri, dbName string) (*TransactionManager, error) {
 
 type TransactionFunction func(transaction neo4j.Transaction) (interface{}, error)
 
-func (manager *TransactionManager) WriteTransaction(cypher string, params map[string]interface{}) error {
+func (manager *TransactionManager) WriteTransaction(ctx context.Context, cypher string, params map[string]interface{}) error {
+	tracer := otel.Tracer("oort.neo4j")
+	ctx, span := tracer.Start(ctx, "neo4j.WriteTransaction")
+	defer span.End()
+
 	_, err := manager.writeTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
 		result, err := transaction.Run(cypher, params)
 		if err != nil {
@@ -37,7 +44,11 @@ func (manager *TransactionManager) WriteTransaction(cypher string, params map[st
 	return err
 }
 
-func (manager *TransactionManager) WriteTransactions(cyphers []string, params []map[string]interface{}) error {
+func (manager *TransactionManager) WriteTransactions(ctx context.Context, cyphers []string, params []map[string]interface{}) error {
+	tracer := otel.Tracer("oort.neo4j")
+	ctx, span := tracer.Start(ctx, "neo4j.WriteTransaction")
+	defer span.End()
+
 	_, err := manager.writeTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
 		var txErr error = nil
 		for i := range cyphers {
@@ -59,7 +70,11 @@ func (manager *TransactionManager) WriteTransactions(cyphers []string, params []
 	return err
 }
 
-func (manager *TransactionManager) ReadTransaction(cypher string, params map[string]interface{}) (interface{}, error) {
+func (manager *TransactionManager) ReadTransaction(ctx context.Context, cypher string, params map[string]interface{}) (interface{}, error) {
+	tracer := otel.Tracer("oort.neo4j")
+	ctx, span := tracer.Start(ctx, "neo4j.ReadTransaction")
+	defer span.End()
+
 	return manager.readTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
 		result, err := transaction.Run(cypher, params)
 		if err != nil {

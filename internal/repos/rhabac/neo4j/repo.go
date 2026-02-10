@@ -1,10 +1,12 @@
 package neo4j
 
 import (
+	"context"
 	"errors"
 
 	"github.com/c12s/oort/internal/domain"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"go.opentelemetry.io/otel"
 )
 
 type RHABACRepo struct {
@@ -19,21 +21,30 @@ func NewRHABACRepo(manager *TransactionManager, factory CypherFactory) domain.RH
 	}
 }
 
-func (store RHABACRepo) CreateResource(req domain.CreateResourceReq) domain.AdministrationResp {
+func (store RHABACRepo) CreateResource(ctx context.Context, req domain.CreateResourceReq) domain.AdministrationResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.CreateResource")
+	defer span.End()
 	cypher, params := store.factory.createResource(req)
-	err := store.manager.WriteTransaction(cypher, params)
+	err := store.manager.WriteTransaction(ctx, cypher, params)
 	return domain.AdministrationResp{Error: err}
 }
 
-func (store RHABACRepo) DeleteResource(req domain.DeleteResourceReq) domain.AdministrationResp {
+func (store RHABACRepo) DeleteResource(ctx context.Context, req domain.DeleteResourceReq) domain.AdministrationResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.DeleteResource")
+	defer span.End()
 	cypher, params := store.factory.deleteResource(req)
-	err := store.manager.WriteTransaction(cypher, params)
+	err := store.manager.WriteTransaction(ctx, cypher, params)
 	return domain.AdministrationResp{Error: err}
 }
 
-func (store RHABACRepo) GetResource(req domain.GetResourceReq) domain.GetResourceResp {
+func (store RHABACRepo) GetResource(ctx context.Context, req domain.GetResourceReq) domain.GetResourceResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.GetResource")
+	defer span.End()
 	cypher, params := store.factory.getResource(req)
-	records, err := store.manager.ReadTransaction(cypher, params)
+	records, err := store.manager.ReadTransaction(ctx, cypher, params)
 	if err != nil {
 		return domain.GetResourceResp{Resource: nil, Error: err}
 	}
@@ -48,45 +59,66 @@ func (store RHABACRepo) GetResource(req domain.GetResourceReq) domain.GetResourc
 	return domain.GetResourceResp{Resource: getResource(records), Error: nil}
 }
 
-func (store RHABACRepo) PutAttribute(req domain.PutAttributeReq) domain.AdministrationResp {
+func (store RHABACRepo) PutAttribute(ctx context.Context, req domain.PutAttributeReq) domain.AdministrationResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.PutAttribute")
+	defer span.End()
 	cypher, params := store.factory.putAttribute(req)
-	err := store.manager.WriteTransaction(cypher, params)
+	err := store.manager.WriteTransaction(ctx, cypher, params)
 	return domain.AdministrationResp{Error: err}
 }
 
-func (store RHABACRepo) DeleteAttribute(req domain.DeleteAttributeReq) domain.AdministrationResp {
+func (store RHABACRepo) DeleteAttribute(ctx context.Context, req domain.DeleteAttributeReq) domain.AdministrationResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.DeleteAttribute")
+	defer span.End()
 	cypher, params := store.factory.deleteAttribute(req)
-	err := store.manager.WriteTransaction(cypher, params)
+	err := store.manager.WriteTransaction(ctx, cypher, params)
 	return domain.AdministrationResp{Error: err}
 }
 
-func (store RHABACRepo) CreateInheritanceRel(req domain.CreateInheritanceRelReq) domain.AdministrationResp {
+func (store RHABACRepo) CreateInheritanceRel(ctx context.Context, req domain.CreateInheritanceRelReq) domain.AdministrationResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.CreateInheritanceRel")
+	defer span.End()
 	cypher, params := store.factory.createInheritanceRel(req)
-	err := store.manager.WriteTransaction(cypher, params)
+	err := store.manager.WriteTransaction(ctx, cypher, params)
 	return domain.AdministrationResp{Error: err}
 }
 
-func (store RHABACRepo) DeleteInheritanceRel(req domain.DeleteInheritanceRelReq) domain.AdministrationResp {
+func (store RHABACRepo) DeleteInheritanceRel(ctx context.Context, req domain.DeleteInheritanceRelReq) domain.AdministrationResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.DeleteInheritanceRel")
+	defer span.End()
 	cypher, params := store.factory.deleteInheritanceRel(req)
-	err := store.manager.WriteTransaction(cypher, params)
+	err := store.manager.WriteTransaction(ctx, cypher, params)
 	return domain.AdministrationResp{Error: err}
 }
 
-func (store RHABACRepo) CreatePolicy(req domain.CreatePolicyReq) domain.AdministrationResp {
+func (store RHABACRepo) CreatePolicy(ctx context.Context, req domain.CreatePolicyReq) domain.AdministrationResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.CreatePolicy")
+	defer span.End()
 	cypher, params := store.factory.createPolicy(req)
-	err := store.manager.WriteTransaction(cypher, params)
+	err := store.manager.WriteTransaction(ctx, cypher, params)
 	return domain.AdministrationResp{Error: err}
 }
 
-func (store RHABACRepo) DeletePolicy(req domain.DeletePolicyReq) domain.AdministrationResp {
+func (store RHABACRepo) DeletePolicy(ctx context.Context, req domain.DeletePolicyReq) domain.AdministrationResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.DeletePolicy")
+	defer span.End()
 	cypher, params := store.factory.deletePolicy(req)
-	err := store.manager.WriteTransaction(cypher, params)
+	err := store.manager.WriteTransaction(ctx, cypher, params)
 	return domain.AdministrationResp{Error: err}
 }
 
-func (store RHABACRepo) GetPermissionHierarchy(req domain.GetPermissionHierarchyReq) domain.GetPermissionHierarchyResp {
+func (store RHABACRepo) GetPermissionHierarchy(ctx context.Context, req domain.GetPermissionHierarchyReq) domain.GetPermissionHierarchyResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.GetPermissionHierarchy")
+	defer span.End()
 	cypher, params := store.factory.getEffectivePermissionsWithPriority(req)
-	records, err := store.manager.ReadTransaction(cypher, params)
+	records, err := store.manager.ReadTransaction(ctx, cypher, params)
 	if err != nil {
 		return domain.GetPermissionHierarchyResp{Hierarchy: nil, Error: err}
 	}
@@ -95,9 +127,12 @@ func (store RHABACRepo) GetPermissionHierarchy(req domain.GetPermissionHierarchy
 	return domain.GetPermissionHierarchyResp{Hierarchy: hierarchy, Error: err}
 }
 
-func (store RHABACRepo) GetApplicablePolicies(req domain.GetApplicablePoliciesReq) domain.GetApplicablePoliciesResp {
+func (store RHABACRepo) GetApplicablePolicies(ctx context.Context, req domain.GetApplicablePoliciesReq) domain.GetApplicablePoliciesResp {
+	tracer := otel.Tracer("oort.neo4j.repo")
+	ctx, span := tracer.Start(ctx, "RHABACRepo.GetApplicablePolicies")
+	defer span.End()
 	cypher, params := store.factory.getApplicablePolicies(req)
-	records, err := store.manager.ReadTransaction(cypher, params)
+	records, err := store.manager.ReadTransaction(ctx, cypher, params)
 	if err != nil {
 		return domain.GetApplicablePoliciesResp{Policies: nil, Error: err}
 	}

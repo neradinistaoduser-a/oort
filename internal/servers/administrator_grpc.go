@@ -2,6 +2,7 @@ package servers
 
 import (
 	"context"
+
 	"github.com/c12s/oort/internal/mappers/proto"
 	"github.com/c12s/oort/internal/services"
 	"github.com/c12s/oort/pkg/api"
@@ -23,7 +24,7 @@ func (o *oortAdministratorGrpcServer) CreateResource(ctx context.Context, req *a
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.CreateResource(*request)
+	resp := o.service.CreateResource(ctx, *request)
 	return &api.AdministrationResp{}, resp.Error
 }
 
@@ -32,7 +33,7 @@ func (o *oortAdministratorGrpcServer) DeleteResource(ctx context.Context, req *a
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.DeleteResource(*request)
+	resp := o.service.DeleteResource(ctx, *request)
 	return &api.AdministrationResp{}, resp.Error
 }
 
@@ -41,7 +42,7 @@ func (o *oortAdministratorGrpcServer) CreateInheritanceRel(ctx context.Context, 
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.CreateInheritanceRel(*request)
+	resp := o.service.CreateInheritanceRel(ctx, *request)
 	return &api.AdministrationResp{}, resp.Error
 }
 
@@ -50,7 +51,7 @@ func (o *oortAdministratorGrpcServer) DeleteInheritanceRel(ctx context.Context, 
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.DeleteInheritanceRel(*request)
+	resp := o.service.DeleteInheritanceRel(ctx, *request)
 	return &api.AdministrationResp{}, resp.Error
 }
 
@@ -59,7 +60,7 @@ func (o *oortAdministratorGrpcServer) PutAttribute(ctx context.Context, req *api
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.PutAttribute(*request)
+	resp := o.service.PutAttribute(ctx, *request)
 	return &api.AdministrationResp{}, resp.Error
 }
 
@@ -68,7 +69,7 @@ func (o *oortAdministratorGrpcServer) DeleteAttribute(ctx context.Context, req *
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.DeleteAttribute(*request)
+	resp := o.service.DeleteAttribute(ctx, *request)
 	return &api.AdministrationResp{}, resp.Error
 }
 
@@ -77,7 +78,7 @@ func (o *oortAdministratorGrpcServer) CreatePolicy(ctx context.Context, req *api
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.CreatePolicy(*request)
+	resp := o.service.CreatePolicy(ctx, *request)
 	return &api.AdministrationResp{}, resp.Error
 }
 
@@ -86,6 +87,6 @@ func (o *oortAdministratorGrpcServer) DeletePolicy(ctx context.Context, req *api
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.DeletePolicy(*request)
+	resp := o.service.DeletePolicy(ctx, *request)
 	return &api.AdministrationResp{}, resp.Error
 }

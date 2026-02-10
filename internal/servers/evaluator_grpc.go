@@ -24,7 +24,7 @@ func (o *oortEvaluatorGrpcServer) Authorize(ctx context.Context, req *api.Author
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.Authorize(*reqDomain)
+	resp := o.service.Authorize(ctx, *reqDomain)
 	return &api.AuthorizationResp{Authorized: resp.Authorized}, resp.Error
 }
 
@@ -33,7 +33,7 @@ func (o *oortEvaluatorGrpcServer) GetGrantedPermissions(ctx context.Context, req
 	if err != nil {
 		return nil, err
 	}
-	resp := o.service.GetGrantedPermissions(*reqDomain)
+	resp := o.service.GetGrantedPermissions(ctx, *reqDomain)
 	if resp.Error != nil {
 		return nil, resp.Error
 	}

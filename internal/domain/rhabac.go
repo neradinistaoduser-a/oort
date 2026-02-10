@@ -1,17 +1,19 @@
 package domain
 
+import "context"
+
 type RHABACRepo interface {
-	CreateResource(req CreateResourceReq) AdministrationResp
-	DeleteResource(req DeleteResourceReq) AdministrationResp
-	GetResource(req GetResourceReq) GetResourceResp
-	PutAttribute(req PutAttributeReq) AdministrationResp
-	DeleteAttribute(req DeleteAttributeReq) AdministrationResp
-	CreateInheritanceRel(req CreateInheritanceRelReq) AdministrationResp
-	DeleteInheritanceRel(req DeleteInheritanceRelReq) AdministrationResp
-	CreatePolicy(req CreatePolicyReq) AdministrationResp
-	DeletePolicy(req DeletePolicyReq) AdministrationResp
-	GetPermissionHierarchy(req GetPermissionHierarchyReq) GetPermissionHierarchyResp
-	GetApplicablePolicies(req GetApplicablePoliciesReq) GetApplicablePoliciesResp
+	CreateResource(ctx context.Context, req CreateResourceReq) AdministrationResp
+	DeleteResource(ctx context.Context, req DeleteResourceReq) AdministrationResp
+	GetResource(ctx context.Context, req GetResourceReq) GetResourceResp
+	PutAttribute(ctx context.Context, req PutAttributeReq) AdministrationResp
+	DeleteAttribute(ctx context.Context, req DeleteAttributeReq) AdministrationResp
+	CreateInheritanceRel(ctx context.Context, req CreateInheritanceRelReq) AdministrationResp
+	DeleteInheritanceRel(ctx context.Context, req DeleteInheritanceRelReq) AdministrationResp
+	CreatePolicy(ctx context.Context, req CreatePolicyReq) AdministrationResp
+	DeletePolicy(ctx context.Context, req DeletePolicyReq) AdministrationResp
+	GetPermissionHierarchy(ctx context.Context, req GetPermissionHierarchyReq) GetPermissionHierarchyResp
+	GetApplicablePolicies(ctx context.Context, req GetApplicablePoliciesReq) GetApplicablePoliciesResp
 }
 
 type CreateResourceReq struct {

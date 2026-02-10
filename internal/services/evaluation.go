@@ -1,9 +1,11 @@
 package services
 
 import (
+	"context"
 	"log"
 
 	"github.com/c12s/oort/internal/domain"
+	"go.opentelemetry.io/otel"
 )
 
 type EvaluationService struct {
@@ -16,8 +18,12 @@ func NewEvaluationService(repo domain.RHABACRepo) (*EvaluationService, error) {
 	}, nil
 }
 
-func (h EvaluationService) Authorize(req domain.AuthorizationReq) domain.AuthorizationResp {
-	resp := h.repo.GetPermissionHierarchy(domain.GetPermissionHierarchyReq{
+func (h EvaluationService) Authorize(ctx context.Context, req domain.AuthorizationReq) domain.AuthorizationResp {
+	tracer := otel.Tracer("oort.service.evaluation")
+	ctx, span := tracer.Start(ctx, "EvaluationService.Authorize")
+	defer span.End()
+
+	resp := h.repo.GetPermissionHierarchy(ctx, domain.GetPermissionHierarchyReq{
 		Subject:        req.Subject,
 		Object:         req.Object,
 		PermissionName: req.PermissionName,
@@ -29,14 +35,14 @@ func (h EvaluationService) Authorize(req domain.AuthorizationReq) domain.Authori
 		}
 	}
 
-	subAttrs, err := h.getAttributes(req.Subject)
+	subAttrs, err := h.getAttributes(ctx, req.Subject)
 	if err != nil {
 		return domain.AuthorizationResp{
 			Authorized: false,
 			Error:      err,
 		}
 	}
-	objAttrs, err := h.getAttributes(req.Object)
+	objAttrs, err := h.getAttributes(ctx, req.Object)
 	if err != nil {
 		return domain.AuthorizationResp{
 			Authorized: false,
@@ -59,10 +65,14 @@ func (h EvaluationService) Authorize(req domain.AuthorizationReq) domain.Authori
 	return checkResp
 }
 
-func (h EvaluationService) GetGrantedPermissions(req domain.GetGrantedPermissionsReq) domain.GetGrantedPermissionsResp {
+func (h EvaluationService) GetGrantedPermissions(ctx context.Context, req domain.GetGrantedPermissionsReq) domain.GetGrantedPermissionsResp {
 	// dobavi sve politike koje su subjektno direktno dodeljene ili ih je nasledio
 	// svaka ukljucuje naziv dozvole i objekat nad kojim vazi
-	resp := h.repo.GetApplicablePolicies(domain.GetApplicablePoliciesReq{
+	tracer := otel.Tracer("oort.service.evaluation")
+	ctx, span := tracer.Start(ctx, "EvaluationService.GetGrantedPermissions")
+	defer span.End()
+
+	resp := h.repo.GetApplicablePolicies(ctx, domain.GetApplicablePoliciesReq{
 		Subject: req.Subject,
 	})
 	if resp.Error != nil {
@@ -71,7 +81,7 @@ func (h EvaluationService) GetGrantedPermissions(req domain.GetGrantedPermission
 
 	granted := make([]domain.GrantedPermission, 0)
 
-	subAttrs, err := h.getAttributes(req.Subject)
+	subAttrs, err := h.getAttributes(ctx, req.Subject)
 	if err != nil {
 		return domain.GetGrantedPermissionsResp{Error: resp.Error}
 	}
@@ -82,7 +92,7 @@ func (h EvaluationService) GetGrantedPermissions(req domain.GetGrantedPermission
 	for _, policy := range resp.Policies {
 		objAttrs, ok := objAttrMap[policy.Object.Name()]
 		if !ok {
-			objAttrs, err = h.getAttributes(policy.Object)
+			objAttrs, err = h.getAttributes(ctx, policy.Object)
 			if err != nil {
 				log.Println(err)
 				continue
@@ -90,7 +100,7 @@ func (h EvaluationService) GetGrantedPermissions(req domain.GetGrantedPermission
 			objAttrMap[policy.Object.Name()] = objAttrs
 		}
 
-		hierarchyResp := h.repo.GetPermissionHierarchy(domain.GetPermissionHierarchyReq{
+		hierarchyResp := h.repo.GetPermissionHierarchy(ctx, domain.GetPermissionHierarchyReq{
 			Subject:        req.Subject,
 			Object:         policy.Object,
 			PermissionName: policy.PermissionName,
@@ -120,8 +130,12 @@ func (h EvaluationService) GetGrantedPermissions(req domain.GetGrantedPermission
 	}
 }
 
-func (h EvaluationService) getAttributes(resource domain.Resource) ([]domain.Attribute, error) {
-	res := h.repo.GetResource(domain.GetResourceReq{Resource: resource})
+func (h EvaluationService) getAttributes(ctx context.Context, resource domain.Resource) ([]domain.Attribute, error) {
+	tracer := otel.Tracer("oort.service.evaluation")
+	ctx, span := tracer.Start(ctx, "EvaluationService.getAttributes")
+	defer span.End()
+
+	res := h.repo.GetResource(ctx, domain.GetResourceReq{Resource: resource})
 	if res.Error != nil {
 		return nil, res.Error
 	}
